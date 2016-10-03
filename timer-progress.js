@@ -38,7 +38,7 @@
 			pause: [],
 			update: []
 		};
-		this.options = this._optionOrDefault(options);
+		this.options = this._optionOrDefault(options || {});
 
 		this.time = {
 			start: null,
@@ -50,13 +50,13 @@
 		this.intervalID = setInterval(this._intervalCallback(), this.options.delay);
 
 		if (this.options.autoStart) {
-			this.start();
+			this.start(this.time.duration);
 		}
 
 	};
 
 	TimerProgress.prototype._optionOrDefault = function (options) {
-		ro = {};
+		var ro = {};
 		ro.duration = options.duration || null;
 		ro.delay = options.delay || 1000;
 		ro.restart = options.hasOwnProperty('restart') ?
@@ -64,15 +64,17 @@
 		if (options.hasOwnProperty('autoStart')) {
 			ro.autoStart = options.autoStart;
 		} else {
-			ro.autoStart = options.delay !== null;
+			ro.autoStart = options.duration !== null;
 		}
 
 		// look for initial callbacks
 		for (var key in this.callbacks) {
-			if (options.hasOWnProperty(key)) {
+			if (options.hasOwnProperty(key)) {
 				this.callbacks[key].push(options[key]);
 			}
 		}
+
+		return ro;
 
 	};
 
@@ -123,13 +125,13 @@
 
 	TimerProgress.prototype._update = function() {
 		if ( this.time.start === null ) {
-			this._doUpdateCallBacks(false, 0, -1);
+			this._doUpdateCallbacks(false, 0, -1);
 			return;
 		}
 		// timer is running
 		var now = Date.now();
 
-		if ( !this._paused() ) {
+		if ( this._paused() ) {
 			var delta = now - this.time.current; // ms since last update
 			// advance the timer, but also the start/stop time, so our percentage doesn't move.
 			this.time.start += delta;
@@ -148,9 +150,9 @@
 			if (this.options.restart === false) {
 				this.stop()
 			} else if (this.options.restart === true) {
-				this.start(this.time.duration())
+				this.start(this.time.duration)
 			} else { // auto restart option not set...
-				if (callBackResult) {
+				if (callbackResult) {
 					this.start(this.time.duration());
 				} else {
 					this.stop();
@@ -166,12 +168,13 @@
 	* 	if provided at initialization
 	*/
 	TimerProgress.prototype.start = function(duration) {
+		duration = duration || this.options.duration
 		var now = Date.now();
 		this.time = {
 			start: now,
 			current: now,
 			stop: now + duration,
-			duration: duration || this.options.duration
+			duration: duration
 		};
 	};
 
