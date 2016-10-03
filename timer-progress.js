@@ -150,10 +150,10 @@
 			if (this.options.restart === false) {
 				this.stop()
 			} else if (this.options.restart === true) {
-				this.start(this.time.duration)
+				this.start();
 			} else { // auto restart option not set...
 				if (callbackResult) {
-					this.start(this.time.duration());
+					this.start();
 				} else {
 					this.stop();
 				}
@@ -168,7 +168,7 @@
 	* 	if provided at initialization
 	*/
 	TimerProgress.prototype.start = function(duration) {
-		duration = duration || this.options.duration
+		duration = duration || this.options.duration || this.time.duration;
 		var now = Date.now();
 		this.time = {
 			start: now,
